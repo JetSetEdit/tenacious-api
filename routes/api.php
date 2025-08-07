@@ -30,12 +30,12 @@ Route::get('/health', function () {
 // Authentication routes
 Route::prefix('auth')->group(function () {
     Route::get('/validate', [AuthController::class, 'validate']);
-    Route::get('/usage', [AuthController::class, 'usage'])->middleware('api.key');
-    Route::get('/endpoints', [AuthController::class, 'endpoints'])->middleware('api.key');
+    Route::get('/usage', [AuthController::class, 'usage'])->middleware('auth:sanctum');
+    Route::get('/endpoints', [AuthController::class, 'endpoints'])->middleware('auth:sanctum');
 });
 
-// Protected routes (require API key)
-Route::middleware('api.key')->group(function () {
+// Protected routes (require API key via Sanctum)
+Route::middleware('auth:sanctum')->group(function () {
     
     // Product routes
     Route::prefix('products')->group(function () {

@@ -5,6 +5,8 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
+use App\Models\Brand;
+use App\Models\Product;
 
 class BrandController extends Controller
 {
@@ -13,10 +15,20 @@ class BrandController extends Controller
      */
     public function overview(): JsonResponse
     {
+        $brand = Brand::where('is_active', true)->first();
+        
+        if (!$brand) {
+            return response()->json([
+                'success' => false,
+                'error' => 'Brand not found',
+                'message' => 'No active brand information available'
+            ], 404);
+        }
+
         $overview = [
-            'company_name' => 'Tenacious Tapes',
+            'company_name' => $brand->name,
             'parent_company' => 'Schaffer & Co (VIC) Pty Ltd',
-            'description' => 'Tenacious Tapes is the house brand of Schaffer & Co (VIC) Pty Ltd, a fourth-generation, family-owned business with a legacy in adhesive tape importation and conversion dating back to the mid-1960s.',
+            'description' => $brand->overview,
             'market_position' => 'We collaborate with leading global manufacturers to develop tailored solutions that meet the unique challenges of the Australian market.',
             'product_range' => 'With one of the largest adhesive tape ranges in Australia, our products span across cloth, gaffer, masking, foil, PE, UHMW, and double-sided formats.',
             'target_market' => 'Trusted by distributors, trades, and industrial professionals.',
@@ -37,17 +49,29 @@ class BrandController extends Controller
      */
     public function company(): JsonResponse
     {
+        $brand = Brand::where('is_active', true)->first();
+        
+        if (!$brand) {
+            return response()->json([
+                'success' => false,
+                'error' => 'Brand not found',
+                'message' => 'No active brand information available'
+            ], 404);
+        }
+
         $company = [
             'name' => 'Schaffer & Co (VIC) Pty Ltd',
-            'brand' => 'Tenacious Tapes',
+            'brand' => $brand->name,
             'established' => '1960s',
             'type' => 'Fourth-generation, family-owned business',
             'specialization' => 'Adhesive tape importation and conversion',
             'market_leadership' => 'Market leaders and innovators supplying adhesive tape and adhesive tape accessories across Australia',
             'distribution_network' => 'Exclusive range supplied through selected distributors Australia-wide',
             'contact_methods' => [
-                'telephone' => 'Available for technical advice',
-                'email' => 'Available for product support'
+                'telephone' => $brand->phone,
+                'email' => $brand->email,
+                'website' => $brand->website,
+                'address' => $brand->address
             ]
         ];
 
@@ -116,75 +140,41 @@ class BrandController extends Controller
     }
 
     /**
-     * Get featured products (from your ATA document).
+     * Get featured products from database.
      */
     public function featured(): JsonResponse
     {
-        $featured = [
-            [
-                'product_code' => 'A944',
-                'name' => 'Premium Gaffer Tape',
-                'description' => 'Professional matte finish; low-reflection, clean removal',
-                'colors' => ['Black', 'White'],
-                'widths' => ['24mm', '48mm', '72mm'],
-                'adhesive_type' => 'Rubber',
-                'common_uses' => ['Film/TV', 'staging', 'events', 'cable bundling']
-            ],
-            [
-                'product_code' => 'K969',
-                'name' => 'General Purpose Cloth',
-                'description' => 'Strong multipurpose cloth tape with durable adhesive',
-                'colors' => ['Silver', 'Black'],
-                'widths' => ['48mm'],
-                'adhesive_type' => 'Rubber',
-                'common_uses' => ['Bundling', 'repairs', 'HVAC', 'carton sealing']
-            ],
-            [
-                'product_code' => 'K909',
-                'name' => 'Contractor Cloth Tape',
-                'description' => 'Economy cloth tape for basic bundling and sealing',
-                'colors' => ['Black', 'Grey'],
-                'widths' => ['48mm', '72mm'],
-                'adhesive_type' => 'Synthetic',
-                'common_uses' => ['Construction', 'temporary repairs']
-            ],
-            [
-                'product_code' => 'AT760',
-                'name' => 'High Strength Gaffer',
-                'description' => 'Extra adhesive strength for demanding applications',
-                'colors' => ['Black', 'Yellow'],
-                'widths' => ['48mm', '72mm'],
-                'adhesive_type' => 'Rubber',
-                'common_uses' => ['Theatre', 'flooring', 'warehouse staging']
-            ],
-            [
-                'product_code' => 'FL166',
-                'name' => 'Fluorescent Cloth Tape',
-                'description' => 'Fluoro colours for visibility and tagging in WHS environments',
-                'colors' => ['Pink', 'Green', 'Orange'],
-                'widths' => ['48mm'],
-                'adhesive_type' => 'Rubber',
-                'common_uses' => ['Safety marking', 'tool identification', 'WHS']
-            ],
-            [
-                'product_code' => 'PT159',
-                'name' => 'Painter\'s Gaffer Hybrid',
-                'description' => 'Clean-peel cloth tape for rough surface masking',
-                'colors' => ['White'],
-                'widths' => ['36mm', '48mm'],
-                'adhesive_type' => 'Acrylic',
-                'common_uses' => ['Timber masking', 'concrete', 'trade exhibitions']
-            ],
-            [
-                'product_code' => 'KD960',
-                'name' => 'Weather Resistant Cloth',
-                'description' => 'Flexible outdoor cloth tape with water-repellent backing',
-                'colors' => ['Black'],
-                'widths' => ['48mm'],
-                'adhesive_type' => 'Rubber',
-                'common_uses' => ['Outdoor sealing', 'tarp repair', 'patch jobs']
-            ]
-        ];
+        $featuredProducts = Product::where('is_featured', true)
+            ->where('is_active', true)
+            ->get();
+
+        if ($featuredProducts->isEmpty()) {
+            return response()->json([
+                'success' => false,
+                'error' => 'No featured products found',
+                'message' => 'No featured products are currently available'
+            ], 404);
+        }
+
+        $featured = $featuredProducts->map(function ($product) {
+            return [
+                'id' => $product->id,
+                'sku' => $product->sku,
+                'name' => $product->name,
+                'description' => $product->description,
+                'category' => $product->category,
+                'type' => $product->type,
+                'color' => $product->color,
+                'width' => $product->width,
+                'price' => $product->price,
+                'currency' => $product->currency,
+                'image_url' => $product->image_url,
+                'specifications' => $product->specifications,
+                'features' => $product->features,
+                'applications' => $product->applications,
+                'stock_quantity' => $product->stock_quantity
+            ];
+        });
 
         return response()->json([
             'success' => true,

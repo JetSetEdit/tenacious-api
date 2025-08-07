@@ -26,43 +26,10 @@ class AuthController extends Controller
         // Remove 'Bearer ' prefix if present
         $apiKey = str_replace('Bearer ', '', $apiKey);
 
-        // Valid API keys and their client information
-        $validKeys = [
-            'ata_live_abc123' => [
-                'client' => 'ATA',
-                'name' => 'ATA Distributors',
-                'access_level' => 'platinum',
-                'rate_limit' => 1000,
-                'rate_limit_window' => 'daily',
-                'permissions' => ['products', 'brand', 'categories', 'search']
-            ],
-            'nda_live_xyz789' => [
-                'client' => 'NDA',
-                'name' => 'NDA Distributors',
-                'access_level' => 'platinum',
-                'rate_limit' => 1000,
-                'rate_limit_window' => 'daily',
-                'permissions' => ['products', 'brand', 'categories', 'search']
-            ],
-            'test_key_123' => [
-                'client' => 'TEST',
-                'name' => 'Test Client',
-                'access_level' => 'test',
-                'rate_limit' => 100,
-                'rate_limit_window' => 'daily',
-                'permissions' => ['products', 'brand', 'categories', 'search']
-            ],
-            'creator_dev_2024' => [
-                'client' => 'CREATOR',
-                'name' => 'API Creator & Developer',
-                'access_level' => 'developer',
-                'rate_limit' => 5000,
-                'rate_limit_window' => 'daily',
-                'permissions' => ['products', 'brand', 'categories', 'search', 'admin', 'debug']
-            ]
-        ];
-
-        if (!array_key_exists($apiKey, $validKeys)) {
+        // Try to authenticate using Sanctum
+        $user = \Laravel\Sanctum\PersonalAccessToken::findToken($apiKey);
+        
+        if (!$user) {
             return response()->json([
                 'success' => false,
                 'error' => 'Invalid API key',
@@ -70,8 +37,20 @@ class AuthController extends Controller
             ], 401);
         }
 
-        $clientInfo = $validKeys[$apiKey];
-        $clientInfo['api_key'] = substr($apiKey, 0, 8) . '...'; // Show only first 8 characters
+        $token = $user->tokenable;
+        $tokenName = $user->name;
+
+        $clientInfo = [
+            'client' => $tokenName,
+            'name' => $tokenName . ' Partner',
+            'access_level' => 'platinum',
+            'rate_limit' => 1000,
+            'rate_limit_window' => 'daily',
+            'permissions' => ['products', 'brand', 'categories', 'search'],
+            'user_id' => $token->id,
+            'token_id' => $user->id,
+            'api_key' => substr($apiKey, 0, 8) . '...' // Show only first 8 characters
+        ];
 
         return response()->json([
             'success' => true,
@@ -85,19 +64,21 @@ class AuthController extends Controller
      */
     public function usage(Request $request): JsonResponse
     {
-        $client = $request->get('api_client');
+        $user = $request->user();
+        $token = $request->user()->currentAccessToken();
         
-        if (!$client) {
+        if (!$user || !$token) {
             return response()->json([
                 'success' => false,
-                'error' => 'Client information not found',
-                'message' => 'Unable to determine client from API key'
-            ], 400);
+                'error' => 'Authentication required',
+                'message' => 'Valid API key required to access usage information'
+            ], 401);
         }
 
         // Mock usage data - in production this would come from a database
         $usage = [
-            'client' => $client,
+            'client' => $token->name,
+            'user_id' => $user->id,
             'period' => 'current_month',
             'requests_made' => rand(50, 500), // Mock data
             'requests_remaining' => 1000 - rand(50, 500), // Mock data
@@ -123,10 +104,19 @@ class AuthController extends Controller
      */
     public function endpoints(Request $request): JsonResponse
     {
-        $client = $request->get('api_client');
+        $user = $request->user();
+        $token = $request->user()->currentAccessToken();
+        
+        if (!$user || !$token) {
+            return response()->json([
+                'success' => false,
+                'error' => 'Authentication required',
+                'message' => 'Valid API key required to access endpoint information'
+            ], 401);
+        }
         
         $endpoints = [
-            'base_url' => config('app.url') . '/api/v1',
+            'base_url' => config('app.url') . '/api',
             'authentication' => [
                 'method' => 'Bearer Token',
                 'header' => 'Authorization: Bearer YOUR_API_KEY'
@@ -147,8 +137,8 @@ class AuthController extends Controller
                 ],
                 'auth' => [
                     'GET /auth/validate' => 'Validate API key',
-                    'GET /auth/usage' => 'Get usage information',
-                    'GET /auth/endpoints' => 'Get available endpoints'
+                    'GET /auth/usage' => 'Get usage information (requires auth)',
+                    'GET /auth/endpoints' => 'Get available endpoints (requires auth)'
                 ]
             ],
             'rate_limits' => [

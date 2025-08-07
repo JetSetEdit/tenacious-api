@@ -24,7 +24,7 @@ echo "Response: " . $authResponse['body'] . "\n\n";
 
 // Test 3: Auth Validation with Valid Key
 echo "3. Testing Auth Validation (Valid Key)...\n";
-$validAuthResponse = testEndpoint($baseUrl . '/api/auth/validate', 'creator_dev_2024');
+$validAuthResponse = testEndpoint($baseUrl . '/api/auth/validate', 'ata_live_abc123');
 echo "Status: " . $validAuthResponse['status'] . "\n";
 echo "Response: " . $validAuthResponse['body'] . "\n\n";
 
@@ -36,21 +36,21 @@ echo "Response: " . $productsResponse['body'] . "\n\n";
 
 // Test 5: Products with Valid Auth
 echo "5. Testing Products (Valid Auth)...\n";
-$validProductsResponse = testEndpoint($baseUrl . '/api/products', 'creator_dev_2024');
+$validProductsResponse = testEndpoint($baseUrl . '/api/products', 'ata_live_abc123');
 echo "Status: " . $validProductsResponse['status'] . "\n";
 echo "Response: " . $validProductsResponse['body'] . "\n\n";
 
 // Test 6: Brand Overview (Requires Auth)
 echo "6. Testing Brand Overview (Valid Auth)...\n";
-$brandResponse = testEndpoint($baseUrl . '/api/brand/overview', 'creator_dev_2024');
+$brandResponse = testEndpoint($baseUrl . '/api/brand/overview', 'ata_live_abc123');
 echo "Status: " . $brandResponse['status'] . "\n";
 echo "Response: " . $brandResponse['body'] . "\n\n";
 
-// Test 7: Invalid Endpoint
-echo "7. Testing Invalid Endpoint...\n";
-$invalidResponse = testEndpoint($baseUrl . '/api/invalid-endpoint');
-echo "Status: " . $invalidResponse['status'] . "\n";
-echo "Response: " . $invalidResponse['body'] . "\n\n";
+// Test 7: Creator Key Test
+echo "7. Testing Creator Key (New)...\n";
+$creatorResponse = testEndpoint($baseUrl . '/api/auth/validate', 'creator_dev_2024');
+echo "Status: " . $creatorResponse['status'] . "\n";
+echo "Response: " . $creatorResponse['body'] . "\n\n";
 
 echo "✅ Testing Complete!\n";
 
