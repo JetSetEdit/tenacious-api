@@ -185,6 +185,9 @@
                     <h2>🧪 Test API Keys</h2>
                     <ul style="list-style: none; padding: 0;">
                         <li style="padding: 8px 0; border-bottom: 1px solid #e2e8f0;">
+                            <strong>Creator/Developer:</strong> <code>creator_dev_2024</code>
+                        </li>
+                        <li style="padding: 8px 0; border-bottom: 1px solid #e2e8f0;">
                             <strong>ATA Distributors:</strong> <code>ata_live_abc123</code>
                         </li>
                         <li style="padding: 8px 0; border-bottom: 1px solid #e2e8f0;">

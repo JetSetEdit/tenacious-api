@@ -51,6 +51,14 @@ class AuthController extends Controller
                 'rate_limit' => 100,
                 'rate_limit_window' => 'daily',
                 'permissions' => ['products', 'brand', 'categories', 'search']
+            ],
+            'creator_dev_2024' => [
+                'client' => 'CREATOR',
+                'name' => 'API Creator & Developer',
+                'access_level' => 'developer',
+                'rate_limit' => 5000,
+                'rate_limit_window' => 'daily',
+                'permissions' => ['products', 'brand', 'categories', 'search', 'admin', 'debug']
             ]
         ];
 
