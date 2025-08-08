@@ -112,22 +112,6 @@ return [
             // 'trust_server_certificate' => env('DB_TRUST_SERVER_CERTIFICATE', 'false'),
         ],
 
-        'jiwa' => [
-            'driver' => 'sqlsrv',
-            'host' => env('JIWA_DB_HOST', 'localhost'),
-            'port' => env('JIWA_DB_PORT', '1433'),
-            'database' => env('JIWA_DB_DATABASE', 'jiwa'),
-            'username' => env('JIWA_DB_USERNAME', ''),
-            'password' => env('JIWA_DB_PASSWORD', ''),
-            'charset' => 'utf8',
-            'prefix' => '',
-            'prefix_indexes' => true,
-            'options' => [
-                PDO::ATTR_TIMEOUT => 60,
-                PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
-            ],
-        ],
-
     ],
 
     /*
